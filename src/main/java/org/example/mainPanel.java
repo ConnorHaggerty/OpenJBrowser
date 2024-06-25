@@ -32,6 +32,7 @@ public class mainPanel extends JFrame {
     private JButton xButton;
     private JButton newTabButton;
     private JButton homeButton;
+    private JToolBar toolBar;
 
 
     //Variables
@@ -247,7 +248,7 @@ public class mainPanel extends JFrame {
     }
 
 
-
+//commit
     public void UpdateURLandTabName()
     {
 
