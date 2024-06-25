@@ -3,6 +3,7 @@ package org.example;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
@@ -13,8 +14,8 @@ import javax.swing.*;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.util.ArrayList;
 
 
 public class mainPanel extends JFrame {
@@ -29,23 +30,31 @@ public class mainPanel extends JFrame {
     private JButton hamburgerButton;
     private JButton refreshButton;
     private JButton xButton;
+    private JButton newTabButton;
+    private JButton homeButton;
 
 
     //Variables
     private WebView webView;
     private WebEngine engine;
+
+    ArrayList<WebEngine> engines = new ArrayList<>();
+
     JFrame frame;
     private String url = "https://www.google.com/";
+    private String homeurl ="https://www.google.com/";
+
+
+    int validindexes=0;
+
 
     PluginLoader pluginLoader = new PluginLoader();
 
-    public mainPanel(JFrame frame)  {
+    public mainPanel(JFrame frame) {
 
         urlField.setText(url);
         this.frame = frame;
         frame.setVisible(true);
-
-
 
 
         //Hamburger loading
@@ -97,26 +106,27 @@ public class mainPanel extends JFrame {
             webView = new WebView();
             engine = webView.getEngine();
 
-            //webView.resize(1900,1000);
-
             //loading home url
-            engine.load(url);
+            engine.load(homeurl);
 
             //Setting home tab name to the url
-            hometab.setName(url);
+            hometab.setName(homeurl);//TODO make this work
 
             //Setting jfx scene
             jfxPanel.setScene(new Scene(webView));
 
-        //Action listener for the location properties
-        engine.locationProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                SwingUtilities.invokeLater(() -> urlField.setText(newValue));
-                hometab.doLayout();
-            }
-        });
+            //adding to our list of engines
+            engines.add(engine);
 
+            //Action listener for the location properties
+            engine.locationProperty().addListener(new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    SwingUtilities.invokeLater(() -> urlField.setText(newValue));
+                    UpdateURLandTabName();
+                    hometab.doLayout();
+                }
+            });
 
 
         });//end of JFX thread
@@ -134,16 +144,116 @@ public class mainPanel extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //Gets the text from URL bar and reloads the engine
-                url=urlField.getText();
-                Platform.runLater(()->{engine.load(url);});
+                url = urlField.getText();
+                Platform.runLater(() -> {
+                    engine.load(url);
+                });
             }
         });
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Platform.runLater(() -> {engine.reload();});
+                Platform.runLater(() -> {
+                    engine.reload();
+                });
             }
         });
+
+        //New Tab Action Listener
+        newTabButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //TODO make new tab
+
+                //new JFX Panel
+                JFXPanel jfxPanelnew = new JFXPanel();
+
+
+                tabs.addTab("New Tab", jfxPanelnew);
+
+
+
+                Platform.runLater(() -> {
+
+                    //Creating a new webveiw and getting the engine
+                    webView = new WebView();
+                    WebEngine enginenew = webView.getEngine();
+
+                    //loading home url
+                    enginenew.load(homeurl);
+
+                    //Setting jfx scene
+                    jfxPanelnew.setScene(new Scene(webView));
+
+                    //Increasing number of valid indexes
+                    validindexes++;
+
+                    //Adding the new engine to our list of engines
+                    engines.add(enginenew);
+
+                    //Setting home tab name to the url
+                    UpdateURLandTabName();
+                    enginenew.locationProperty().addListener(new ChangeListener<String>() {
+                        @Override
+                        public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                            SwingUtilities.invokeLater(() -> {
+                                urlField.setText(newValue);
+                                UpdateURLandTabName();
+                            });
+
+                        }
+                    });
+
+                });
+
+
+            }
+        });
+
+        //Home Button Listener
+        homeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Platform.runLater(() -> {engines.get(tabs.getSelectedIndex()).load(homeurl);});
+            }
+        });
+
+        //Close Tab Button
+        xButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (validindexes > 0) {
+                    tabs.removeTabAt(tabs.getSelectedIndex());
+                    validindexes--;
+                }
+                else
+                {
+                    System.exit(0);
+                }
+
+            }
+        });
+
+
+        //Setting our URL between Tabs
+        tabs.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseMoved(e);
+                UpdateURLandTabName();
+
+            }
+        });
+    }
+
+
+
+    public void UpdateURLandTabName()
+    {
+
+    urlField.setText(engines.get(tabs.getSelectedIndex()).getLocation());
+    tabs.setTitleAt(tabs.getSelectedIndex(), engines.get(tabs.getSelectedIndex()).getTitle()); urlField.setText(engines.get(tabs.getSelectedIndex()).getLocation());
+
     }
     public JPanel getPanel()
     {

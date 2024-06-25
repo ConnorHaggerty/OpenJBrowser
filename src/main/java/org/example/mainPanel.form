@@ -44,6 +44,7 @@
             <children>
               <component id="fe06e" class="javafx.embed.swing.JFXPanel" binding="jfxPanel">
                 <constraints border-constraint="Center"/>
+                <properties/>
               </component>
             </children>
           </grid>
@@ -95,7 +96,19 @@
           <component id="14566" class="javax.swing.JButton" binding="xButton" default-binding="true">
             <constraints/>
             <properties>
-              <text value="X"/>
+              <text value="   x   "/>
+            </properties>
+          </component>
+          <component id="68377" class="javax.swing.JButton" binding="newTabButton">
+            <constraints/>
+            <properties>
+              <text value="   +   "/>
+            </properties>
+          </component>
+          <component id="ffa47" class="javax.swing.JButton" binding="homeButton">
+            <constraints/>
+            <properties>
+              <text value="   ⌂   "/>
             </properties>
           </component>
         </children>
