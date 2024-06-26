@@ -124,8 +124,17 @@ public class mainPanel extends JFrame {
                 @Override
                 public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                     SwingUtilities.invokeLater(() -> urlField.setText(newValue));
-                    UpdateURLandTabName();
+
                     hometab.doLayout();
+                }
+            });
+
+            engine.titleProperty().addListener(new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
+                    SwingUtilities.invokeLater(() -> {
+                        tabs.setTitleAt(tabs.getSelectedIndex(), newValue);
+                    });
                 }
             });
 
@@ -173,7 +182,6 @@ public class mainPanel extends JFrame {
                 tabs.addTab("New Tab", jfxPanelnew);
 
 
-
                 Platform.runLater(() -> {
 
                     //Creating a new webveiw and getting the engine
@@ -193,13 +201,23 @@ public class mainPanel extends JFrame {
                     engines.add(enginenew);
 
                     //Setting home tab name to the url
-                    UpdateURLandTabName();
+
                     enginenew.locationProperty().addListener(new ChangeListener<String>() {
                         @Override
                         public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                             SwingUtilities.invokeLater(() -> {
                                 urlField.setText(newValue);
-                                UpdateURLandTabName();
+
+                            });
+
+
+                            enginenew.titleProperty().addListener(new ChangeListener<String>() {
+                                @Override
+                                public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
+                                    SwingUtilities.invokeLater(() -> {
+                                        tabs.setTitleAt(tabs.getSelectedIndex(), newValue);
+                                    });
+                                }
                             });
 
                         }
@@ -215,7 +233,9 @@ public class mainPanel extends JFrame {
         homeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Platform.runLater(() -> {engines.get(tabs.getSelectedIndex()).load(homeurl);});
+                Platform.runLater(() -> {
+                    engines.get(tabs.getSelectedIndex()).load(homeurl);
+                });
             }
         });
 
@@ -226,36 +246,18 @@ public class mainPanel extends JFrame {
                 if (validindexes > 0) {
                     tabs.removeTabAt(tabs.getSelectedIndex());
                     validindexes--;
-                }
-                else
-                {
+                } else {
                     System.exit(0);
                 }
 
             }
         });
 
-
-        //Setting our URL between Tabs
-        tabs.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseMoved(e);
-                UpdateURLandTabName();
-
-            }
-        });
     }
 
 
 //commit
-    public void UpdateURLandTabName()
-    {
 
-    urlField.setText(engines.get(tabs.getSelectedIndex()).getLocation());
-    tabs.setTitleAt(tabs.getSelectedIndex(), engines.get(tabs.getSelectedIndex()).getTitle()); urlField.setText(engines.get(tabs.getSelectedIndex()).getLocation());
-
-    }
     public JPanel getPanel()
     {
         return this.mainpanel;
